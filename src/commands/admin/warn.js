@@ -1,6 +1,6 @@
 const { Command } = require("sheweny");
 
-module.exports = class TypeCommand extends Command {
+module.exports = class WarnCommand extends Command {
     constructor(client) {
         super(client, {
             name: "warn",
@@ -41,7 +41,7 @@ module.exports = class TypeCommand extends Command {
           }
           try {
             await user.send(`Vous avez été averti dans le serveur **${interaction.guild.name}**. Au bout de 3 warn, vous subierez un mute.\n La raison est la suivante : **${reason}**`);
-            interaction.reply(`L'utilisateur ${user.user.tag} a été averti avec succès. \n Comme raison : **${reason}**`);
+            interaction.reply(`L'utilisateur ${user} a été averti avec succès. \n Comme raison : **${reason}**`);
           } catch (error) {
             console.error(`Une erreur s'est produite lors de l'envoi du message d'avertissement : ${error}`);
             interaction.reply("Une erreur s'est produite lors de l'envoi du message d'avertissement.");

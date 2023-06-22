@@ -1,6 +1,6 @@
 const { Command } = require("sheweny");
 
-module.exports = class TypeCommand extends Command {
+module.exports = class ReportCommand extends Command {
     constructor(client) {
         super(client, {
             name: "report",
@@ -33,6 +33,8 @@ module.exports = class TypeCommand extends Command {
         if (!user) {
             return interaction.reply("Vous devez mentionner un utilisateur à avertir.");
           }
-            interaction.reply(`L'utilisateur ${user.user.tag} a été averti avec succès. \n Comme raison : **${reason}**`);
+            interaction.reply(`\`\`\`Vous avez report ${user} succès. 
+                              \nLe staff vérifiera vos report.\`\`\`
+                              \n Raison du report : **${reason}**`);
             }
         };
