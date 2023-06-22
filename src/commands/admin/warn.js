@@ -14,6 +14,12 @@ module.exports = class TypeCommand extends Command {
                     type: "USER",
                     required: true
                 },
+                {
+                    name: "reason",
+                    description: "met une raison",
+                    type: "STRING",
+                    required: true
+                }
             ],
         });
     }
@@ -21,6 +27,7 @@ module.exports = class TypeCommand extends Command {
 
     async execute(interaction) {
         const user = interaction.options.getMember('name');
+        const reason = interaction.options.getString('reason');
 
 
         // Vérifier si l'utilisateur a les permissions nécessaires pour avertir des membres
@@ -33,8 +40,8 @@ module.exports = class TypeCommand extends Command {
             return interaction.reply("Vous devez mentionner un utilisateur à avertir.");
           }
           try {
-            await user.send(`Vous avez été averti dans le serveur ${interaction.guild.name}. Veuillez prendre en compte cet avertissement.`);
-            interaction.reply(`L'utilisateur ${user.user.tag} a été averti avec succès.`);
+            await user.send(`Vous avez été averti dans le serveur **${interaction.guild.name}**. Au bout de 3 warn, vous subierez un mute.\n La raison est la suivante : **${reason}**`);
+            interaction.reply(`L'utilisateur ${user.user.tag} a été averti avec succès. \n Comme raison : **${reason}**`);
           } catch (error) {
             console.error(`Une erreur s'est produite lors de l'envoi du message d'avertissement : ${error}`);
             interaction.reply("Une erreur s'est produite lors de l'envoi du message d'avertissement.");
