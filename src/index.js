@@ -4,7 +4,7 @@ const { ShewenyClient } = require("sheweny");
 const config = require("../config.json");
 
 const client = new ShewenyClient({
-  intents: ["GUILDS", "GUILD_MESSAGES"],
+  intents: ["GUILDS", "GUILD_MESSAGES", "DIRECT_MESSAGES"],
   managers: {
     commands: {
       directory: "./commands",
