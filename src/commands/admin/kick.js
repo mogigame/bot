@@ -3,8 +3,8 @@ const { Command } = require("sheweny");
 module.exports = class banCommand extends Command {
   constructor(client) {
     super(client, {
-      name: "ban",
-      description: "Ba nqqn",
+      name: "kick",
+      description: "kick",
       type: "SLASH_COMMAND",
       category: "Misc",
       cooldown: 3,

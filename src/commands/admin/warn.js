@@ -30,7 +30,6 @@ module.exports = class WarnCommand extends Command {
         const reason = interaction.options.getString('reason');
 
 
-        // Vérifier si l'utilisateur a les permissions nécessaires pour avertir des membres
         if (!interaction.member.permissions.has("KICK_MEMBERS")) {
             return interaction.reply("Vous n'avez pas la permission d'utiliser cette commande.");
         }

@@ -1,7 +1,12 @@
-
 const { MembershipScreeningFieldType } = require("discord-api-types/v9");
 const { ShewenyClient } = require("sheweny");
 const config = require("../config.json");
+const Sequelize = require('sequelize');
+const { Client, Events, GatewayIntentBits } = require('discord.js');
+const mysql = require('mysql');
+
+
+
 
 const client = new ShewenyClient({
   intents: ["GUILDS", "GUILD_MESSAGES", "DIRECT_MESSAGES"],
@@ -21,8 +26,9 @@ const client = new ShewenyClient({
       directory: "./interactions/selectmenus",
     },
   },
-  mode : "development", // Change to production for production bot0
+  mode: "development", // Change to production for production bot0
 });
+
 
 
 client.login(config.DISCORD_TOKEN);
