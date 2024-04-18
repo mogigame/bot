@@ -1,6 +1,6 @@
 const { Command } = require("sheweny");
 
-module.exports = class banCommand extends Command {
+module.exports = class KickCommand extends Command {
   constructor(client) {
     super(client, {
       name: "kick",
@@ -11,12 +11,12 @@ module.exports = class banCommand extends Command {
       options: [
         {
             name: "cible",
-            description: "Qui voulez vous bannir ?",
+            description: "Qui voulez vous kick ?",
             type: "USER",
             required: true,
         },{
             name : "raison",
-            description: "raison du mute",
+            description: "raison du kick",
             type: "STRING",
             required : true
           },
@@ -37,11 +37,11 @@ module.exports = class banCommand extends Command {
                 reason: [`${raison}`]
             })
             interaction.reply({
-                content: `${target} a été banni`
+                content: `${target} a été kick`
             })
         } catch (error) {
             interaction.reply({
-                content: `Je n'ai pas reussi à bannir ${target}`
+                content: `Je n'ai pas reussi à kick ${target}`
             })
         }
 
