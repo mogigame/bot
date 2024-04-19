@@ -1,9 +1,7 @@
 const { MembershipScreeningFieldType } = require("discord-api-types/v9");
 const { ShewenyClient } = require("sheweny");
 const config = require("../config.json");
-const Sequelize = require('sequelize');
 const { Client, Events, GatewayIntentBits } = require('discord.js');
-const mysql = require('mysql');
 
 
 

@@ -25,6 +25,7 @@ module.exports = class MessageCommand extends Command {
   async execute(interaction) {
     const message = interaction.options.getString("msg")
     const embed = new MessageEmbed()
+      .setAuthor("Anonymous")
       .setDescription(message)
       .setColor('#0099ff');
 
