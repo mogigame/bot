@@ -10,9 +10,11 @@
   "dependencies": {
     "canvas": "^2.10.2",
     "discord.js": "^13.17.1",
+    "dotenv": "^16.4.5",
     "mysql": "^2.18.1",
+    "punycode": "^2.3.1",
     "sequelize": "^6.32.1",
-    "sheweny": "^3.0.0",
+    "sheweny": "^3.5.0",
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {

@@ -5,3 +5,4 @@ base_de_donne
 config.json
 
 *.txt
+*.log
