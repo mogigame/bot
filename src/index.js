@@ -10,6 +10,7 @@ try {
   console.error('Erreur lors de la lecture du fichier de configuration:', error);
 }
 
+
 // Crée une instance de ShewenyClient
 const client = new ShewenyClient({
   intents: [
