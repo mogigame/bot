@@ -10,6 +10,15 @@ module.exports = class ReadyEvent extends Event {
   }
 
   execute() {
-    console.log(`connecter en tant que ${this.client.user.tag} \nje suis prêt`)
+    console.log(`connecter en tant que ${this.client.user.tag} \nje suis prêt`);
+
+    this.client.user.setPresence({
+      activities: [{
+        name: 'Fait /help pour voir les commandes',
+        state: 'Made by mogigame', 
+        type: 'WATCHING',
+      }],
+      status: 'dnd',
+    });
   }
 };

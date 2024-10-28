@@ -61,10 +61,10 @@ module.exports = class HelpCommand extends Command {
         break;
       default:
         embed.addField('Commandes pour les membres', '/help membre')
-            .addField('Commandes pour le staff', '/help staff');
+          .addField('Commandes pour le staff', '/help staff');
         break;
     }
 
-    await interaction.reply({ embeds: [embed] });
+    await interaction.reply({ embeds: [embed], ephemeral: true });
   }
 };

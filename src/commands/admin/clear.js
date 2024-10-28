@@ -42,12 +42,12 @@ module.exports = class ClearCommand extends Command {
         setTimeout(async () => {
           if (recentMessages.size <= 0) {
             await interaction.reply({
-              content: "aucun message n'a été supprimé car ils sont trop anciens.",
+              content: "aucun message n'a été supprimé car ils sont trop anciens.", ephemeral: true ,
             });
           }
           else{
           await interaction.reply({
-            content: `${recentMessages.size} messages ont été supprimés.`,
+            content: `${recentMessages.size} messages ont été supprimés.`, ephemeral: true ,
           });
         }
         }, 500);
@@ -55,12 +55,12 @@ module.exports = class ClearCommand extends Command {
       } catch (error) {
         console.error('Erreur lors de la suppression des messages :', error);
         await interaction.reply({
-          content: `Je n'ai pas réussi à supprimer ${nombre} messages :(`,
+          content: `Je n'ai pas réussi à supprimer ${nombre} messages :(`, ephemeral: true ,
         });
       }
     } else {
       await interaction.reply({
-        content: "Tu n'as pas la permission de supprimer des messages.",
+        content: "Tu n'as pas la permission de supprimer des messages.", ephemeral: true ,
       });
     }
   }
