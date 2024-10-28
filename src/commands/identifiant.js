@@ -30,7 +30,7 @@ module.exports = class IdentifiantCommand extends Command {
       const embed = new MessageEmbed()
         .setColor('#d99241')
         .addFields(
-          { name: `L'identifiant de ${target.tag} est :`, value: `${target.id}` }
+          { name: `L'identifiant de ${target.tag} est :`, value: `${target.id}`, }
         );
 
       await interaction.reply({ embeds: [embed] });

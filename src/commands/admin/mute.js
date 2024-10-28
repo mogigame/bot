@@ -48,7 +48,6 @@ module.exports = class MuteCommand extends Command {
 
     if (!mutedRole) {
       try {
-        // Si le rôle 'mute' n'existe pas, créez-le
         mutedRole = await interaction.guild.roles.create({
           name: "MUTE",
           color: "GREY",
@@ -64,13 +63,11 @@ module.exports = class MuteCommand extends Command {
 
     if (interaction.member.permissions.has('ADMINISTRATOR')) {
       try {
-        // Donne le rôle mute à la cible
         await cible.roles.add(mutedRole);
         interaction.reply({
           content: `${cible.user.tag} a été muté. Raison : ${raison}`,
         });
 
-        // Utilise setTimeout pour retirer le rôle après le délai spécifié
         setTimeout(async () => {
           await cible.roles.remove(mutedRole);
         }, temps * 24 * 60 * 60 * 1000);
