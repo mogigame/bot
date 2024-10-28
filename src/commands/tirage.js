@@ -25,7 +25,7 @@ module.exports = class TirageCommand extends Command {
     const result = Math.floor(Math.random() * nombre + 1);
 
     await interaction.reply({
-      content: `Nombre au hasard entre 1 et ${nombre} => ${result} :-)`,
+      content: `Nombre au hasard entre 1 et ${nombre} => ${result} :-)`, ephemeral: true ,
     });
     
     console.log("quelqu'un veut jouer au loto ?");
