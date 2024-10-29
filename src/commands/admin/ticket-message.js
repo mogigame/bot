@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../../../config.json');
 
-// Fonction pour vérifier si un ticket existe déjà pour un utilisateur
 async function hasOpenTicket(interaction) {
   const openCategoryID = config.openCategoryID;
   const existingChannels = interaction.guild.channels.cache.filter(channel =>
@@ -26,7 +25,6 @@ module.exports = class TicketButtonCommand extends Command {
   }
 
   async execute(interaction) {
-    // Envoi du message avec le bouton de création de ticket
     const button = new MessageActionRow()
       .addComponents(
         new MessageButton()
@@ -42,17 +40,14 @@ module.exports = class TicketButtonCommand extends Command {
 
     await interaction.reply({ embeds: [embed], components: [button]});
 
-    // Collecteur pour gérer le clic sur le bouton "Créer un ticket"
     const filter = (btnInteraction) => btnInteraction.customId === 'create_ticket' && btnInteraction.user.id === interaction.user.id;
     const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
     collector.on('collect', async (btnInteraction) => {
-      // Vérifie si un ticket est déjà ouvert pour l'utilisateur
       if (await hasOpenTicket(btnInteraction)) {
         return btnInteraction.reply({ content: "Vous avez déjà un ticket ouvert.", ephemeral: true });
       }
 
-      // Création et affichage du modal pour saisir la raison
       const modal = new Modal()
         .setCustomId('ticket_reason')
         .setTitle('Création de ticket')
@@ -68,14 +63,12 @@ module.exports = class TicketButtonCommand extends Command {
 
       await btnInteraction.showModal(modal);
 
-      // Attendre la soumission du modal
       const modalSubmit = await btnInteraction.awaitModalSubmit({ time: 60000 });
       if (!modalSubmit) return;
 
       const raison = modalSubmit.fields.getTextInputValue('reason_input');
       await modalSubmit.reply({ content: 'Votre ticket est en cours de création...', ephemeral: true });
 
-      // Création et configuration du canal de ticket
       const openCategoryID = config.openCategoryID;
       const closeCategoryID = config.closeCategoryID;
       const archiveCategoryID = config.archiveCategoryID;
@@ -108,7 +101,6 @@ module.exports = class TicketButtonCommand extends Command {
 
       const message = await ticketChannel.send({ embeds: [embedTicket], components: [closeButton] });
 
-      // Gestion de la fermeture du ticket
       const closeFilter = (i) => i.customId === 'close_ticket' && i.user.id === interaction.user.id;
       const closeCollector = message.createMessageComponentCollector({ filter: closeFilter, time: 86400000 });
 

@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../../config.json');
 
-// Fonction pour vérifier si un ticket existe déjà pour un utilisateur
 async function hasOpenTicket(interaction) {
   const openCategoryID = config.openCategoryID;
   const existingChannels = interaction.guild.channels.cache.filter(channel =>
@@ -34,12 +33,11 @@ module.exports = class TicketCommand extends Command {
   }
 
   async execute(interaction) {
-    // Vérifie si un ticket est déjà ouvert pour l'utilisateur
     if (await hasOpenTicket(interaction)) {
       return interaction.reply({ content: "Vous avez déjà un ticket ouvert.", ephemeral: true });
     }
 
-    await interaction.deferReply();
+    await interaction.deferReply(); 
     try {
       const raison = interaction.options.getString('raison');
       const openCategoryID = config.openCategoryID;
@@ -76,6 +74,8 @@ module.exports = class TicketCommand extends Command {
 
       const message = await ticketChannel.send({ embeds: [embedTicket], components: [closeButton] });
 
+      await interaction.editReply({ content: `Votre ticket a été créé : ${ticketChannel}`, ephemeral: true });
+
       const closeFilter = (i) => i.customId === 'close_ticket' && i.user.id === interaction.user.id;
       const closeCollector = message.createMessageComponentCollector({ filter: closeFilter, time: 86400000 });
 
@@ -85,7 +85,7 @@ module.exports = class TicketCommand extends Command {
 
         const closeEmbed = new MessageEmbed()
           .setTitle('Ticket fermé')
-          .setDescription('Le ticket est désormais fermé. Choisissez une option pour le gérer.')
+          .setDescription('Le ticket est désormais fermé. Choisissez une option pour le gérer.\nRaison du ticket :' + raison)
           .setColor('RED');
 
         const closeActions = new MessageActionRow()
