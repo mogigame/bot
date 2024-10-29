@@ -31,12 +31,10 @@ module.exports = class TicketCommand extends Command {
     const logChannelID = config.logChannelID;
     const logDir = path.resolve(__dirname, '../../log/ticket'); // Répertoire pour les logs à la racine
 
-    // Créer le répertoire s'il n'existe pas
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
     }
 
-    // Créer le canal de ticket
     const ticketChannel = await interaction.guild.channels.create(`ticket-${interaction.user.username}`, {
       type: 'GUILD_TEXT',
       parent: openCategoryID,
