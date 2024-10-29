@@ -32,10 +32,8 @@ const client = new ShewenyClient({
       directory: "./interactions/selectmenus",
     },
   },
-  mode: "production",
+  mode: "production", 
 });
-
-
 
 client.suggestionChannelId = config.suggestionChannelId;
 
