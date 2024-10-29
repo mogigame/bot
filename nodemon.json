@@ -3,7 +3,6 @@
       "."
     ],
     "ignore": [
-      "config.json",
       "src/log/*"
     ]
   }

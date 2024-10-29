@@ -31,7 +31,7 @@ module.exports = class BanCommand extends Command {
     const raison = interaction.options.getString('raison');
     const member = await interaction.guild.members.cache.get(target.id)
 
-    if(interaction.member.permissions.has('ADMINISTRATOR')) {
+    if(interaction.member.permissions.has('BAN_MEMBERS')) {
         try {
             member.ban({
                 reason: [`${raison}`]

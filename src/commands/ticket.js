@@ -29,7 +29,8 @@ module.exports = class TicketCommand extends Command {
     const closeCategoryID = config.closeCategoryID;
     const archiveCategoryID = config.archiveCategoryID;
     const logChannelID = config.logChannelID;
-    const logDir = path.resolve(__dirname, '../../log/ticket');
+    const logDir = path.resolve(__dirname, '../log/ticket');
+
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
     }
