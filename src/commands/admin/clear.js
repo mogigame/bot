@@ -22,23 +22,18 @@ module.exports = class ClearCommand extends Command {
   async execute(interaction) {
     const nombre = interaction.options.getNumber('nombre');
     
-    // Limite le nombre de messages à supprimer à 100 (la limite de Discord)
     const limit = Math.min(nombre, 100);
 
     if (interaction.member.permissions.has('ADMINISTRATOR')) {
       try {
-        // Récupère les messages
         const messages = await interaction.channel.messages.fetch({ limit: limit });
         
-        // Filtre les messages pour ne garder que ceux de moins de 14 jours
         const recentMessages = messages.filter(msg => {
           return (Date.now() - msg.createdTimestamp) < (14 * 24 * 60 * 60 * 1000);
         });
 
-        // Supprime les messages récents en masse
         await interaction.channel.bulkDelete(recentMessages);
 
-        // Répond après une courte pause pour éviter les problèmes de timing
         setTimeout(async () => {
           if (recentMessages.size <= 0) {
             await interaction.reply({

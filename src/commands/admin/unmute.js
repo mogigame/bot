@@ -33,7 +33,6 @@ module.exports = class UnmuteCommand extends Command {
     }
 
     try {
-      // Rafraîchir la mise en cache du rôle "mute"
       await interaction.guild.roles.fetch();
       const mutedRole = interaction.guild.roles.cache.find(role => role.name === "MUTE");
 

@@ -40,7 +40,6 @@ module.exports = class ConfigTicketCategoriesCommand extends Command {
     }
 
     async execute(interaction) {
-        // Vérifier si l'utilisateur a le rôle admin
         if (!interaction.member.permissions.has('ADMINISTRATOR')) {
             return interaction.reply({ content: 'Vous n\'avez pas la permission d\'utiliser cette commande.', ephemeral: true });
         }
@@ -50,17 +49,14 @@ module.exports = class ConfigTicketCategoriesCommand extends Command {
         const archiveCategoryID = interaction.options.getString('categorie_archive');
         const logChannelID = interaction.options.getString('log_channel');
 
-        const configPath = path.resolve(__dirname, '../../../config.json'); // Assurez-vous que le chemin est correct
+        const configPath = path.resolve(__dirname, '../../../config.json'); 
 
         let config;
 
-        // Vérifiez si le fichier existe déjà
         if (fs.existsSync(configPath)) {
-            // Lire le contenu du fichier de configuration
             const configData = fs.readFileSync(configPath, 'utf-8');
-            config = JSON.parse(configData); // Parse le contenu en objet JSON
+            config = JSON.parse(configData);
         } else {
-            // Si le fichier n'existe pas, initialiser un nouvel objet
             config = {
                 openCategoryID: '',
                 closeCategoryID: '',
@@ -69,13 +65,11 @@ module.exports = class ConfigTicketCategoriesCommand extends Command {
             };
         }
 
-        // Mettre à jour uniquement les catégories
         config.openCategoryID = openCategoryID;
         config.closeCategoryID = closeCategoryID;
         config.archiveCategoryID = archiveCategoryID;
         config.logChannelID = logChannelID;
 
-        // Écrire le contenu mis à jour dans le fichier
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
         await interaction.reply({ content: 'Les catégories des tickets ont été mises à jour avec succès.', ephemeral: true });

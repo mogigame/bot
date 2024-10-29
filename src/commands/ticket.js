@@ -2,7 +2,7 @@ const { Command } = require('sheweny');
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const config = require('../../config.json'); // Assurez-vous que le chemin est correct
+const config = require('../../config.json');
 
 module.exports = class TicketCommand extends Command {
   constructor(client) {
@@ -31,6 +31,7 @@ module.exports = class TicketCommand extends Command {
     const logChannelID = config.logChannelID;
     const logDir = path.resolve(__dirname, '../../log/ticket'); // Répertoire pour les logs à la racine
 
+    // Créer le répertoire s'il n'existe pas
     if (!fs.existsSync(logDir)) {
       fs.mkdirSync(logDir, { recursive: true });
     }
@@ -69,72 +70,80 @@ module.exports = class TicketCommand extends Command {
     const collector = message.createMessageComponentCollector({ filter, time: 86400000 });
 
     collector.on('collect', async (btnInteraction) => {
-      await ticketChannel.permissionOverwrites.edit(interaction.user.id, { VIEW_CHANNEL: false });
+      try {
+        if (!ticketChannel || !ticketChannel.isText()) return;
 
-      await ticketChannel.setParent(closeCategoryID);
+        await ticketChannel.permissionOverwrites.edit(interaction.user.id, { VIEW_CHANNEL: false });
+        await ticketChannel.setParent(closeCategoryID);
 
-      const closeEmbed = new MessageEmbed()
-        .setTitle('Ticket fermé')
-        .setDescription('Le ticket est désormais fermé. Choisissez une option pour le gérer.')
-        .setColor('RED');
+        const closeEmbed = new MessageEmbed()
+          .setTitle('Ticket fermé')
+          .setDescription('Le ticket est désormais fermé. Choisissez une option pour le gérer.')
+          .setColor('RED');
 
-      const closeActions = new MessageActionRow()
-        .addComponents(
-          new MessageButton()
-            .setCustomId('archive_ticket')
-            .setLabel('Archiver le ticket')
-            .setStyle('SECONDARY'),
-          new MessageButton()
-            .setCustomId('delete_ticket')
-            .setLabel('Supprimer le ticket')
-            .setStyle('DANGER')
-        );
+        const closeActions = new MessageActionRow()
+          .addComponents(
+            new MessageButton()
+              .setCustomId('archive_ticket')
+              .setLabel('Archiver le ticket')
+              .setStyle('SECONDARY'),
+            new MessageButton()
+              .setCustomId('delete_ticket')
+              .setLabel('Supprimer le ticket')
+              .setStyle('DANGER')
+          );
 
-      await ticketChannel.send({ embeds: [closeEmbed], components: [closeActions] });
+        closeButton.components[0].setDisabled(true);
 
-      btnInteraction.reply({ content: 'Le ticket a été fermé. Vous pouvez l\'archiver ou le supprimer.', ephemeral: true });
-      collector.stop();
-
-      const archiveDeleteCollector = ticketChannel.createMessageComponentCollector({ time: 86400000 });
-
-      archiveDeleteCollector.on('collect', async (actionInteraction) => {
-        if (actionInteraction.customId === 'archive_ticket') {
-          const messages = await ticketChannel.messages.fetch({ limit: 100 });
-          const logContent = messages
-            .reverse()
-            .map(msg => {
-              const dateOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Paris' };
-              const dateFormatter = new Intl.DateTimeFormat('fr-FR', dateOptions);
-              const formattedDate = dateFormatter.format(msg.createdAt);
-              return `[${formattedDate}] ${msg.author.tag}: ${msg.content}`;
-            })
-            .join('\n');
-
-          const logFilePath = path.join(logDir, `ticket-${interaction.user.username}-${raison}.log`);
-          fs.writeFileSync(logFilePath, logContent);
-
-          const logChannel = interaction.guild.channels.cache.get(logChannelID);
-          if (logChannel) {
-            await logChannel.send({
-              content: `Archive du ticket de ${interaction.user.tag}`,
-              files: [logFilePath],
-            });
-          }
-
-          await ticketChannel.setParent(archiveCategoryID);
-          await actionInteraction.reply({ content: 'Le ticket a été archivé.', ephemeral: true });
-        } else if (actionInteraction.customId === 'delete_ticket') {
-          await actionInteraction.reply({ content: 'Le ticket va être supprimé.', ephemeral: true });
-          await ticketChannel.delete();
+        if (message && message.editable) {
+          await message.edit({ embeds: [closeEmbed], components: [closeActions] });
+        } else {
+          console.error("Impossible d'éditer le message pour ajouter les boutons d'archive et de suppression.");
         }
-      });
-    });
 
-    collector.on('end', () => {
-      closeButton.components[0].setDisabled(true);
-      message.edit({ components: [closeButton] });
-    });
+        await btnInteraction.reply({ content: 'Le ticket a été fermé. Vous pouvez l\'archiver ou le supprimer.', ephemeral: true });
+        collector.stop();
 
-    interaction.reply({ content: `Votre ticket a été créé: ${ticketChannel}`, ephemeral: true });
+        const archiveDeleteCollector = ticketChannel.createMessageComponentCollector({ time: 86400000 });
+
+        archiveDeleteCollector.on('collect', async (actionInteraction) => {
+          try {
+            if (actionInteraction.customId === 'archive_ticket') {
+              const messages = await ticketChannel.messages.fetch({ limit: 100 });
+              const logContent = messages
+                .reverse()
+                .map(msg => {
+                  const dateOptions = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/Paris' };
+                  const dateFormatter = new Intl.DateTimeFormat('fr-FR', dateOptions);
+                  const formattedDate = dateFormatter.format(msg.createdAt);
+                  return `[${formattedDate}] ${msg.author.tag}: ${msg.content}`;
+                })
+                .join('\n');
+
+              const logFilePath = path.join(logDir, `ticket-${interaction.user.username}-${raison}.log`);
+              fs.writeFileSync(logFilePath, logContent);
+
+              const logChannel = interaction.guild.channels.cache.get(logChannelID);
+              if (logChannel) {
+                await logChannel.send({
+                  content: `Archive du ticket de ${interaction.user.tag}`,
+                  files: [logFilePath],
+                });
+              }
+
+              await ticketChannel.setParent(archiveCategoryID);
+              await actionInteraction.reply({ content: 'Le ticket a été archivé.', ephemeral: true });
+            } else if (actionInteraction.customId === 'delete_ticket') {
+              await actionInteraction.reply({ content: 'Le ticket va être supprimé.', ephemeral: true });
+              await ticketChannel.delete();
+            }
+          } catch (error) {
+            console.error("Erreur lors de l'archivage ou suppression du ticket:", error);
+          }
+        });
+      } catch (error) {
+        console.error("Erreur lors de la collecte des interactions de fermeture:", error);
+      }
+    });
   }
-};
+}    
