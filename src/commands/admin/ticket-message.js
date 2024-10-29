@@ -1,8 +1,8 @@
 const { Command } = require('sheweny');
-const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { MessageEmbed, MessageActionRow, MessageButton, Modal, TextInputComponent } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const config = require('../../config.json');
+const config = require('../../../config.json');
 
 // Fonction pour vérifier si un ticket existe déjà pour un utilisateur
 async function hasOpenTicket(interaction) {
@@ -14,43 +14,75 @@ async function hasOpenTicket(interaction) {
   return existingChannels.size > 0;
 }
 
-module.exports = class TicketCommand extends Command {
+module.exports = class TicketButtonCommand extends Command {
   constructor(client) {
     super(client, {
-      name: 'ticket',
-      description: 'Créer un ticket',
+      name: 'ticket-message',
+      description: 'Envoie un message avec un bouton pour créer un ticket',
       type: 'SLASH_COMMAND',
       category: 'Misc',
       cooldown: 3,
-      options: [
-        {
-          name: 'raison',
-          description: 'Raison du ticket',
-          type: 'STRING',
-          required: true,
-        },
-      ],
     });
   }
 
   async execute(interaction) {
-    // Vérifie si un ticket est déjà ouvert pour l'utilisateur
-    if (await hasOpenTicket(interaction)) {
-      return interaction.reply({ content: "Vous avez déjà un ticket ouvert.", ephemeral: true });
-    }
+    // Envoi du message avec le bouton de création de ticket
+    const button = new MessageActionRow()
+      .addComponents(
+        new MessageButton()
+          .setCustomId('create_ticket')
+          .setLabel('Créer un ticket')
+          .setStyle('PRIMARY')
+      );
 
-    await interaction.deferReply();
-    try {
-      const raison = interaction.options.getString('raison');
+    const embed = new MessageEmbed()
+      .setTitle('Support')
+      .setDescription('Cliquez sur le bouton ci-dessous pour créer un ticket.')
+      .setColor('GREEN');
+
+    await interaction.reply({ embeds: [embed], components: [button]});
+
+    // Collecteur pour gérer le clic sur le bouton "Créer un ticket"
+    const filter = (btnInteraction) => btnInteraction.customId === 'create_ticket' && btnInteraction.user.id === interaction.user.id;
+    const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+
+    collector.on('collect', async (btnInteraction) => {
+      // Vérifie si un ticket est déjà ouvert pour l'utilisateur
+      if (await hasOpenTicket(btnInteraction)) {
+        return btnInteraction.reply({ content: "Vous avez déjà un ticket ouvert.", ephemeral: true });
+      }
+
+      // Création et affichage du modal pour saisir la raison
+      const modal = new Modal()
+        .setCustomId('ticket_reason')
+        .setTitle('Création de ticket')
+        .addComponents(
+          new MessageActionRow().addComponents(
+            new TextInputComponent()
+              .setCustomId('reason_input')
+              .setLabel('Indiquez la raison de votre demande')
+              .setStyle('PARAGRAPH')
+              .setRequired(true)
+          )
+        );
+
+      await btnInteraction.showModal(modal);
+
+      // Attendre la soumission du modal
+      const modalSubmit = await btnInteraction.awaitModalSubmit({ time: 60000 });
+      if (!modalSubmit) return;
+
+      const raison = modalSubmit.fields.getTextInputValue('reason_input');
+      await modalSubmit.reply({ content: 'Votre ticket est en cours de création...', ephemeral: true });
+
+      // Création et configuration du canal de ticket
       const openCategoryID = config.openCategoryID;
       const closeCategoryID = config.closeCategoryID;
       const archiveCategoryID = config.archiveCategoryID;
       const logChannelID = config.logChannelID;
-      const logDir = path.resolve(__dirname, '../log/ticket');
+      const logDir = path.resolve(__dirname, '../../log/ticket');
 
-      if (!fs.existsSync(logDir)) {
-        fs.mkdirSync(logDir, { recursive: true });
-      }
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
 
       const ticketChannel = await interaction.guild.channels.create(`ticket-${interaction.user.username}`, {
         type: 'GUILD_TEXT',
@@ -76,6 +108,7 @@ module.exports = class TicketCommand extends Command {
 
       const message = await ticketChannel.send({ embeds: [embedTicket], components: [closeButton] });
 
+      // Gestion de la fermeture du ticket
       const closeFilter = (i) => i.customId === 'close_ticket' && i.user.id === interaction.user.id;
       const closeCollector = message.createMessageComponentCollector({ filter: closeFilter, time: 86400000 });
 
@@ -142,9 +175,6 @@ module.exports = class TicketCommand extends Command {
           }
         });
       });
-    } catch (error) {
-      console.error("Erreur lors de la création du ticket:", error);
-      interaction.reply({ content: "Une erreur est survenue lors de la création du ticket.", ephemeral: true });
-    }
+    });
   }
-};
+}
