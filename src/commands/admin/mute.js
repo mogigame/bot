@@ -1,24 +1,26 @@
 const { Command } = require("sheweny");
+const { ApplicationCommandOptionType, PermissionsBitField } = require("discord.js");
 
 module.exports = class MuteCommand extends Command {
   constructor(client) {
     super(client, {
       name: "mute",
-      description: "Plus parler",
-      type: "SLASH_COMMAND",
-      category: "admin",
+      description: "Empêche un utilisateur de parler pendant un temps défini.",
+      type: 'SLASH_COMMAND',
+      category: "Admin",
       cooldown: 3,
+      userPermissions: [PermissionsBitField.Flags.ModerateMembers],
       options: [
         {
           name: "cible",
-          description: "Quelqu'un sur terre",
-          type: "USER",
+          description: "Quelqu'un à mute",
+          type: ApplicationCommandOptionType.User,
           required: true,
         },
         {
           name: "temps",
-          description: "Le temps que tu veux",
-          type: "NUMBER",
+          description: "Le temps pendant lequel l'utilisateur sera mute",
+          type: ApplicationCommandOptionType.Integer,
           required: true,
           choices: [
             { name: "1 jour", value: 1 },
@@ -33,7 +35,7 @@ module.exports = class MuteCommand extends Command {
         {
           name: "raison",
           description: "Raison du mute",
-          type: "STRING",
+          type: ApplicationCommandOptionType.String,
           required: true,
         },
       ],
@@ -41,45 +43,42 @@ module.exports = class MuteCommand extends Command {
   }
 
   async execute(interaction) {
-    const cible = interaction.options.getMember('cible');
-    const temps = interaction.options.getNumber('temps');
-    const raison = interaction.options.getString('raison');
+    const cible = interaction.options.getMember("cible");
+    const temps = interaction.options.getInteger("temps");
+    const raison = interaction.options.getString("raison");
     let mutedRole = interaction.guild.roles.cache.find(role => role.name === "MUTE");
 
     if (!mutedRole) {
       try {
         mutedRole = await interaction.guild.roles.create({
           name: "MUTE",
-          color: "GREY",
+          color: "#808080",
           mentionable: false,
           hoist: false,
           permissions: [],
         });
+
+        console.log("Rôle 'MUTE' créé avec succès");
       } catch (error) {
         console.error(`Erreur lors de la création du rôle 'MUTE': ${error.message}`);
-        return interaction.reply({ content: "Impossible de créer le rôle 'mute'.", ephemeral: true });
+        return interaction.reply({ content: `Impossible de créer le rôle 'mute'. Détails de l'erreur : ${error.message}`, ephemeral: true });
       }
     }
 
-    if (interaction.member.permissions.has('ADMINISTRATOR')) {
-      try {
-        await cible.roles.add(mutedRole);
-        interaction.reply({
-          content: `${cible.user.tag} a été muté. Raison : ${raison}`,
-        });
 
-        setTimeout(async () => {
-          await cible.roles.remove(mutedRole);
-        }, temps * 24 * 60 * 60 * 1000);
-      } catch (error) {
-        console.error(`Impossible de muter ${cible.user.tag} : ${error.message}`);
-        interaction.reply({ content: `Impossible de muter ${cible.user.tag}`, ephemeral: true });
-      }
-    } else {
-      interaction.reply({
-        content: "Tu n'as pas la permission pour exécuter cette commande !",
-        ephemeral: true,
+    try {
+      await cible.roles.add(mutedRole);
+      await interaction.reply({
+        content: `${cible.user.tag} a été muté pour ${temps} jour(s). Raison : ${raison}`,
       });
+
+      setTimeout(async () => {
+        await cible.roles.remove(mutedRole);
+        console.log(`${cible.user.tag} a été unmuté après ${temps} jour(s).`);
+      }, temps * 24 * 60 * 60 * 1000);
+    } catch (error) {
+      console.error(`Impossible de muter ${cible.user.tag} : ${error.message}`);
+      await interaction.reply({ content: `Impossible de muter ${cible.user.tag}`, ephemeral: true });
     }
   }
 };

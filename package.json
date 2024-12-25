@@ -9,13 +9,13 @@
   },
   "dependencies": {
     "canvas": "^2.10.2",
-    "discord.js": "^13.17.1",
+    "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "mysql": "^2.18.1",
     "punycode": "^2.3.1",
-    "sequelize": "^6.32.1",
-    "sheweny": "^3.5.0",
-    "sqlite3": "^5.1.6"
+    "sequelize": "^6.37.5",
+    "sheweny": "^4.2.1",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "nodemon": "^2.0.0"

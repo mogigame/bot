@@ -1,8 +1,9 @@
 {
   "watch": [
-    "."
+    "*"
   ],
   "ignore": [
-    "src/log/*"
+    "src/logs/**",
+    "ticketNumber.json"
   ]
 }

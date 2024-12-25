@@ -1,55 +1,59 @@
-const { Command } = require("sheweny");
+const { Command } = require('sheweny');
+const { ApplicationCommandOptionType, PermissionsBitField } = require('discord.js');
 
 module.exports = class BanCommand extends Command {
   constructor(client) {
     super(client, {
-      name: "ban",
-      description: "ban",
-      type: "SLASH_COMMAND",
-      category: "Misc",
-      cooldown: 3,
+      name: 'ban',
+      description: 'Bannir un membre du serveur.',
+      type: 'SLASH_COMMAND',
+      category: 'Admin',
+      userPermissions: [PermissionsBitField.Flags.BanMembers],
       options: [
         {
-            name: "cible",
-            description: "Qui voulez vous ban ?",
-            type: "USER",
-            required: true,
-        },{
-            name : "raison",
-            description: "raison du ban",
-            type: "STRING",
-            required : true
-          },
-      ]
+          name: 'membre',
+          description: 'Le membre à bannir.',
+          type: ApplicationCommandOptionType.User,
+          required: true,
+        },
+        {
+          name: 'raison',
+          description: 'La raison du bannissement.',
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
     });
   }
 
-  
-
   async execute(interaction) {
-    const target = interaction.options.getUser('cible');
-    const raison = interaction.options.getString('raison');
-    const member = await interaction.guild.members.cache.get(target.id)
+    await interaction.deferReply();
 
-    if(interaction.member.permissions.has('ADMINISTRATOR')) {
-        try {
-            member.ban({
-                reason: [`${raison}`]
-            })
-            interaction.reply({
-                content: `${target} a été bannie`
-            })
-        } catch (error) {
-            interaction.reply({
-                content: `Je n'ai pas reussi à ban ${target}`
-            })
-        }
+    const membre = interaction.options.getMember('membre');
+    const raison = interaction.options.getString('raison') || 'Aucune raison spécifiée.';
 
-    } else {
-        interaction.reply({
-            content: "T'as pas la perm c'est domage"
-        })
+    if (!membre) {
+      return interaction.editReply({
+        content: "Je n'ai pas pu trouver cet utilisateur ou il n'est pas sur ce serveur.",
+      });
+    }
+
+    if (!membre.bannable) {
+      return interaction.editReply({
+        content: "Je ne peux pas bannir cet utilisateur. Vérifiez mes permissions ou le rôle de l'utilisateur.",
+      });
+    }
+
+    try {
+      await membre.ban({ reason: raison });
+      return interaction.editReply({
+        content: `✅ ${membre.user.tag} a été banni avec succès.\nRaison : ${raison}`,
+      });
+    } catch (error) {
+      console.error(error);
+      return interaction.editReply({
+        content: "Une erreur est survenue lors du bannissement de cet utilisateur.",
+      });
     }
   }
 };
-

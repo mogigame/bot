@@ -1,61 +1,45 @@
-const { Command } = require("sheweny");
+const { Command } = require('sheweny');
+const { ApplicationCommandOptionType, PermissionsBitField } = require('discord.js');
 
 module.exports = class ClearCommand extends Command {
   constructor(client) {
     super(client, {
-      name: "clear",
-      description: "Supprime un nombre de messages",
-      type: "SLASH_COMMAND",
-      category: "Misc",
-      cooldown: 3,
+      name: 'clear',
+      description: 'Supprime un certain nombre de messages dans le salon actuel.',
+      type: 'SLASH_COMMAND',
+      category: 'Admin',
+      userPermissions: [PermissionsBitField.Flags.ManageMessages],
       options: [
         {
-          name: "nombre",
-          description: "Combien de messages veux-tu supprimer ?",
-          type: "NUMBER",
+          name: 'nombre',
+          description: 'Le nombre de messages à supprimer (1-100).',
+          type: ApplicationCommandOptionType.Integer,
           required: true,
-        }
+        },
       ],
     });
   }
 
   async execute(interaction) {
-    const nombre = interaction.options.getNumber('nombre');
+    await interaction.deferReply({ ephemeral: true });
+
+    const nombre = interaction.options.getInteger('nombre');
+
+    if (nombre < 1 || nombre > 100) {
+      return interaction.editReply({
+        content: "❌ Veuillez fournir un nombre entre 1 et 100.",
+      });
+    }
     
-    const limit = Math.min(nombre, 100);
-
-    if (interaction.member.permissions.has('ADMINISTRATOR')) {
-      try {
-        const messages = await interaction.channel.messages.fetch({ limit: limit });
-        
-        const recentMessages = messages.filter(msg => {
-          return (Date.now() - msg.createdTimestamp) < (14 * 24 * 60 * 60 * 1000);
-        });
-
-        await interaction.channel.bulkDelete(recentMessages);
-
-        setTimeout(async () => {
-          if (recentMessages.size <= 0) {
-            await interaction.reply({
-              content: "aucun message n'a été supprimé car ils sont trop anciens.", ephemeral: true ,
-            });
-          }
-          else{
-          await interaction.reply({
-            content: `${recentMessages.size} messages ont été supprimés.`, ephemeral: true ,
-          });
-        }
-        }, 500);
-
-      } catch (error) {
-        console.error('Erreur lors de la suppression des messages :', error);
-        await interaction.reply({
-          content: `Je n'ai pas réussi à supprimer ${nombre} messages :(`, ephemeral: true ,
-        });
-      }
-    } else {
-      await interaction.reply({
-        content: "Tu n'as pas la permission de supprimer des messages.", ephemeral: true ,
+    try {
+      const messages = await interaction.channel.bulkDelete(nombre, true);
+      return interaction.editReply({
+        content: `✅ ${messages.size} message(s) supprimé(s) avec succès.`,
+      });
+    } catch (error) {
+      console.error(error);
+      return interaction.editReply({
+        content: "❌ Une erreur est survenue lors de la suppression des messages.",
       });
     }
   }
